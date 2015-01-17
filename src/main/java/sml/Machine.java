@@ -26,8 +26,7 @@ public class Machine {
 
 	private int pc;
 
-	{
-		labels = new Labels();
+	{   labels = new Labels();
 		prog = new ArrayList<>();
 		pc = 0;
 	}

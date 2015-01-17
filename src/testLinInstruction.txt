@@ -1,0 +1,4 @@
+l0 lin 0 10
+l1 lin 5 -3
+l3 lin 10 1
+l5 lin 11

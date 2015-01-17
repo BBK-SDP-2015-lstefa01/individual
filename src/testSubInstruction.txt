@@ -1,0 +1,5 @@
+s0 lin 5 100
+s1 lin 19 56
+s2 sub 5 5 19
+s3 lin 30 -90
+s4 sub 5 30 5
