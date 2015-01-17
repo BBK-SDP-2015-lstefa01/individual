@@ -1,0 +1,5 @@
+m0 lin 5 100
+m1 lin 19 56
+m2 mul 5 5 19
+m3 lin 30 -90
+m4 mul 5 30 5
