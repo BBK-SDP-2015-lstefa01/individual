@@ -5,3 +5,4 @@ d3 lin 30 -90
 d4 div 5 30 5
 d5 lin 16 0
 d6 div 30 30 16
+d7 out 5

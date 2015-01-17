@@ -6,6 +6,11 @@ package sml;
  * @author someone
  */
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public abstract class Instruction {
 	protected String label;
 	protected String opcode;
@@ -28,4 +33,6 @@ public abstract class Instruction {
 	// Execute this instruction on machine m.
 
 	public abstract void execute(Machine m);
+
+
 }
