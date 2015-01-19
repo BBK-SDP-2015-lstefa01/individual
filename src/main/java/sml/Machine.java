@@ -53,8 +53,10 @@ public class Machine {
 	@Override
 	public String toString() {
 		StringBuffer s = new StringBuffer();
-		for (int i = 0; i != getProg().size(); i++)
+		for (int i = 0; i != getProg().size(); i++){
+			//TODO need to make sure the skipped instructions are not printed out
 			s.append(getProg().get(i) + "\n");
+	}
 		return s.toString();
 	}
 

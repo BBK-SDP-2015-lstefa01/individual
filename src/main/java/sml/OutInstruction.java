@@ -23,13 +23,12 @@ public class OutInstruction extends Instruction {
     @Override
     public void execute(Machine m) {
         regVal = m.getRegisters().getRegister(op1);
-
-        System.out.println("Value of register " + op1 +": " + regVal);
+        //TODO value of regVal is not printing out properly-shows as 0
 
     }
 
     @Override
     public String toString(){
-        return super.toString() + " " + "value of register " + op1 + ": " + regVal ;
+        return super.toString() + " " + "value of register " + op1 + ": " + regVal;
     }
 }

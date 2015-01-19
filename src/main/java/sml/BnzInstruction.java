@@ -1,8 +1,13 @@
 package sml;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Created by liliya on 17/01/2015.
  */
+@Getter
+@Setter
 public class BnzInstruction extends Instruction {
 
     private int op1;
@@ -22,14 +27,21 @@ public class BnzInstruction extends Instruction {
     public void execute(Machine m) {
         if(m.getRegisters().getRegister(op1)!=0){
             for(Instruction i: m.getProg()){
-                if(i.label==newLabel){
+                if(i.label.equals(newLabel)){
                     int index = m.getProg().indexOf(i);
                     m.setPc(m.getProg().indexOf(i));
                 }
 
             }
 
+        } else{
+
         }
 
+    }
+
+    @Override
+    public String toString(){
+        return super.toString() + " jump to instruction " + newLabel +" next";
     }
 }
