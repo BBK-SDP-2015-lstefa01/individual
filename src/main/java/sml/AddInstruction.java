@@ -1,11 +1,15 @@
 package sml;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * This class ....
  * 
  * @author someone
  */
 
+@Getter
 public class AddInstruction extends Instruction {
 
 	private int result;
@@ -22,6 +26,7 @@ public class AddInstruction extends Instruction {
 		this.op1 = op1;
 		this.op2 = op2;
 	}
+
 
 	@Override
 	public void execute(Machine m) {

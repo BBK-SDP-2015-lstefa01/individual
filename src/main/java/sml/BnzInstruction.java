@@ -25,16 +25,14 @@ public class BnzInstruction extends Instruction {
 
     @Override
     public void execute(Machine m) {
-        if(m.getRegisters().getRegister(op1)!=0){
+        if(m.getRegisters().getRegister(op1)!=0){   //check register is not 0
             for(Instruction i: m.getProg()){
-                if(i.label.equals(newLabel)){
+                if(i.label.equals(newLabel)){       //find the required instruction
                     int index = m.getProg().indexOf(i);
                     m.setPc(m.getProg().indexOf(i));
                 }
 
             }
-
-        } else{
 
         }
 

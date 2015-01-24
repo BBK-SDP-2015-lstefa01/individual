@@ -1,11 +1,13 @@
 package sml;
 
+import lombok.Getter;
+
 /**
  * This class ....
  * 
  * @author someone
  */
-
+@Getter
 public class LinInstruction extends Instruction {
 	private int register;
 	private int value;

@@ -1,8 +1,12 @@
 package sml;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Created by liliya on 17/01/2015.
  */
+@Getter
 public class DivInstruction extends Instruction {
 
     private int op1;

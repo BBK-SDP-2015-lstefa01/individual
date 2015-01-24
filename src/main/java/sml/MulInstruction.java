@@ -1,8 +1,11 @@
 package sml;
 
+import lombok.Getter;
+
 /**
  * Created by liliya on 17/01/2015.
  */
+@Getter
 public class MulInstruction extends Instruction {
 
     private int op1;
