@@ -2,7 +2,8 @@ package sml;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
@@ -82,49 +83,64 @@ public class Translator {
         int r;
         int x;
         String l;
-
         if (line.equals(""))
             return null;
-//		try {
         String ins = scan();
-        switch (ins) {
-            case "add":
-                r = scanInt();
-                s1 = scanInt();
-                s2 = scanInt();
-                return new AddInstruction(label, r, s1, s2);
-            case "lin":
-                r = scanInt();
-                s1 = scanInt();
-                return new LinInstruction(label, r, s1);
-            case "sub":
-                r = scanInt();
-                s1 = scanInt();
-                s2 = scanInt();
-                return new SubInstruction(label, r, s1, s2);
-            case "mul":
-                r = scanInt();
-                s1 = scanInt();
-                s2 = scanInt();
-                return new MulInstruction(label, r, s1, s2);
-            case "div":
-                r = scanInt();
-                s1 = scanInt();
-                s2 = scanInt();
-                return new DivInstruction(label, r, s1, s2);
-            case "out":
-                r = scanInt();
-                return new OutInstruction(label, r);
-            case "bnz":
-                r = scanInt();    //register
-                l = scan();        //new label
-                return new BnzInstruction(label, r, l);
-        }
+        Class<?> cls = null;
+        Constructor cons = null;
+       try {
+            switch (ins) {
+                case "add":
+                    r = scanInt();
+                    s1 = scanInt();
+                    s2 = scanInt();
+                    cls = getClassesForInstructionTypes(ins);
+                    cons = cls.getConstructor(String.class, int.class, int.class, int.class);
+                    return (Instruction) cons.newInstance(label,r, s1, s2);
+                case "lin":
+                    r = scanInt();
+                    s1 = scanInt();
+                    cls = getClassesForInstructionTypes(ins);
+                    cons = cls.getConstructor(String.class, int.class, int.class);
+                    return (Instruction) cons.newInstance(label, r, s1);
+                case "sub":
+                    r = scanInt();
+                    s1 = scanInt();
+                    s2 = scanInt();
+                    cls = getClassesForInstructionTypes(ins);
+                    cons = cls.getConstructor(String.class, int.class, int.class, int.class);
+                    return (Instruction) cons.newInstance(label, r, s1, s2);
+                case "mul":
+                    r = scanInt();
+                    s1 = scanInt();
+                    s2 = scanInt();
+                    cls = getClassesForInstructionTypes(ins);
+                    cons = cls.getConstructor(String.class, int.class, int.class, int.class);
+                    return (Instruction) cons.newInstance(label, r, s1, s2);
+                case "div":
+                    r = scanInt();
+                    s1 = scanInt();
+                    s2 = scanInt();
+                    cls = getClassesForInstructionTypes(ins);
+                    cons = cls.getConstructor(String.class, int.class, int.class, int.class);
+                    return (Instruction) cons.newInstance(label, r, s1, s2);
+                case "out":
+                    r = scanInt();
+                    cls = getClassesForInstructionTypes(ins);
+                    cons = cls.getConstructor(String.class, int.class);
+                    return (Instruction) cons.newInstance(label, r);
+                case "bnz":
+                    r = scanInt();    //register
+                    l = scan();        //new label
+                    cls = getClassesForInstructionTypes(ins);
+                    cons = cls.getConstructor(String.class, int.class, String.class);
+                    return (Instruction) cons.newInstance(label, r, l);
+            }
+        }catch(NoSuchMethodException| InvocationTargetException|InstantiationException|IllegalAccessException ex){
+            ex.printStackTrace();
+       }
+       // You will have to write code here for the other instructions.
 
-        // You will have to write code here for the other instructions.
-
-//			ex.printStackTrace();
-//		}
         return null;
     }
 
@@ -136,7 +152,6 @@ public class Translator {
         line = line.trim();
         if (line.length() == 0)
             return "";
-
         int i = 0;
         while (i < line.length() && line.charAt(i) != ' ' && line.charAt(i) != '\t') {
             i = i + 1;
@@ -153,7 +168,6 @@ public class Translator {
         if (word.length() == 0) {
             return Integer.MAX_VALUE;
         }
-
         try {
             return Integer.parseInt(word);
         } catch (NumberFormatException e) {
@@ -161,12 +175,20 @@ public class Translator {
         }
     }
 
-    private List<Class> findAllClassesInProgram() {
+    private Class<?> getClassesForInstructionTypes(String opcode){
+        StringBuilder opcd = new StringBuilder();
+        opcd.append(opcode.substring(0,1).toUpperCase()).append(opcode.substring(1));
+        for(Class<?> c:findAllClassesInProgram()){
+            if(c.getName().contains(opcd)){
+                return c;
+            }
+        }
+        return null;
+    }
+
+    private List<Class<?>> findAllClassesInProgram() {
 
         List<File> roots = getRoots();  //find all the class roots
-
-        System.out.println("Class names to be checked");
-        System.out.println(buildClassList(roots));
 
         return buildClassList(roots);
     }
@@ -182,23 +204,28 @@ public class Translator {
         return roots;
     }
 
-    private List<Class> buildClassList(List<File> roots){
+    private List<Class<?>> buildClassList(List<File> roots){
         List<File> classFilesNotInJars = new ArrayList<>();
         List<File> classFilesInJars = new ArrayList<>();
+        List<Class<?>> instructionChildren = new ArrayList<>();
             for (File f : roots) {
                 if (f.getName().contains(".jar")) {
-                //    System.out.println("File names in jar: " + findAllClassesInAJar(f.getPath()));
                     classFilesInJars.add(f);
                 }
                 Translator.findAllNonJarClasses(f, classFilesNotInJars);
             }
-        System.out.println("File names not in jar:" + classFilesNotInJars);
 
         List<File> commonListClassFiles = new ArrayList<>();
         commonListClassFiles.addAll(classFilesInJars);
         commonListClassFiles.addAll(classFilesNotInJars);
 
-        return  convertFilesToClasses(commonListClassFiles);
+
+        for(Class<?> c:convertFilesToClasses(commonListClassFiles)){
+            if(Instruction.class.isAssignableFrom(c)){
+                instructionChildren.add(c);
+            }
+        }
+        return instructionChildren;
     }
 
 
@@ -248,9 +275,8 @@ public class Translator {
         }
     }
 
-    private static List<Class> convertFilesToClasses(List<File> files) {
-        List<Class> clazzes = new ArrayList<>();
-        //URL [] urls = new URL [];
+    private static List<Class<?>> convertFilesToClasses(List<File> files) {
+        List<Class<?>> clazzes = new ArrayList<>();
         String formattedPath = "";
         for (File f : files) {
             if (f.getName().endsWith(".class")) {
@@ -262,8 +288,6 @@ public class Translator {
                             formattedPath = formattedPath.replace("/", ".");
                         }
                     }
-                    System.out.println("File path: "+formattedPath);
-
                     clazzes.add(Class.forName(formattedPath));
                 } catch (ClassNotFoundException e) {
                     System.out.println("Could not identify path to load class from");
@@ -273,6 +297,7 @@ public class Translator {
         }
         return clazzes;
     }
+
 
 
     public static void main(String [] args){
