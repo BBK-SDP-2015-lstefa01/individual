@@ -51,7 +51,7 @@ public class Translator {
             while (line != null) {
                 // Store the label in label
                 String label = scan();
-                //check if the label is duplicate
+                //TODO check if the label is duplicate
 
                 if (label.length() > 0) {
                     Instruction ins = getInstruction(label);
@@ -78,70 +78,10 @@ public class Translator {
     // removed. Translate line into an instruction with label label
     // and return the instruction
     public Instruction getInstruction(String label) {
-        int s1; // Possible operands of the instruction
-        int s2;
-        int r;
-        int x;
-        String l;
         if (line.equals(""))
             return null;
-        String ins = scan();
-        Class<?> cls = null;
-        Constructor cons = null;
-       try {
-            switch (ins) {
-                case "add":
-                    r = scanInt();
-                    s1 = scanInt();
-                    s2 = scanInt();
-                    cls = getClassesForInstructionTypes(ins);
-                    cons = cls.getConstructor(String.class, int.class, int.class, int.class);
-                    return (Instruction) cons.newInstance(label,r, s1, s2);
-                case "lin":
-                    r = scanInt();
-                    s1 = scanInt();
-                    cls = getClassesForInstructionTypes(ins);
-                    cons = cls.getConstructor(String.class, int.class, int.class);
-                    return (Instruction) cons.newInstance(label, r, s1);
-                case "sub":
-                    r = scanInt();
-                    s1 = scanInt();
-                    s2 = scanInt();
-                    cls = getClassesForInstructionTypes(ins);
-                    cons = cls.getConstructor(String.class, int.class, int.class, int.class);
-                    return (Instruction) cons.newInstance(label, r, s1, s2);
-                case "mul":
-                    r = scanInt();
-                    s1 = scanInt();
-                    s2 = scanInt();
-                    cls = getClassesForInstructionTypes(ins);
-                    cons = cls.getConstructor(String.class, int.class, int.class, int.class);
-                    return (Instruction) cons.newInstance(label, r, s1, s2);
-                case "div":
-                    r = scanInt();
-                    s1 = scanInt();
-                    s2 = scanInt();
-                    cls = getClassesForInstructionTypes(ins);
-                    cons = cls.getConstructor(String.class, int.class, int.class, int.class);
-                    return (Instruction) cons.newInstance(label, r, s1, s2);
-                case "out":
-                    r = scanInt();
-                    cls = getClassesForInstructionTypes(ins);
-                    cons = cls.getConstructor(String.class, int.class);
-                    return (Instruction) cons.newInstance(label, r);
-                case "bnz":
-                    r = scanInt();    //register
-                    l = scan();        //new label
-                    cls = getClassesForInstructionTypes(ins);
-                    cons = cls.getConstructor(String.class, int.class, String.class);
-                    return (Instruction) cons.newInstance(label, r, l);
-            }
-        }catch(NoSuchMethodException| InvocationTargetException|InstantiationException|IllegalAccessException ex){
-            ex.printStackTrace();
-       }
-       // You will have to write code here for the other instructions.
-
-        return null;
+        String ins = scan();    //get the opcode for the instruction
+        return getInstructionObject(ins, label);    //generate and return new instruction object
     }
 
     /*
@@ -175,11 +115,58 @@ public class Translator {
         }
     }
 
-    private Class<?> getClassesForInstructionTypes(String opcode){
+    /**
+     * Takes in an instruction opcode and label and returns an Instruction object of the right type
+     * @param ins the opcode of the instruction
+     * @param label the label of the instruction line
+     * @return the new Instruction object
+     */
+    private Instruction getInstructionObject(String ins, String label) {
+
+        Class<?> cls = null;
+        Constructor cons = null;
+        Object[] consArgs = null;
+
+        try {
+            cls = getInstructionTypeCLass(ins);
+            Constructor[] constructs = cls.getConstructors();
+            //TODO need to find a more robust way to select the correct constructor
+            cons = constructs[1];
+            Class[] paramType = cons.getParameterTypes();
+            consArgs = new Object[paramType.length];
+
+            //TODO test double values are supported?
+            for (int i = 1; i < paramType.length; i++) {
+                if (paramType[i].getTypeName().equals("int")) {
+                    consArgs[i] = scanInt();
+                } else if (paramType[i].getTypeName().equals("java.lang.String")) {
+                    consArgs[i] = scan();
+                }
+            }
+            Constructor cons1 = cls.getConstructor(paramType);  //ensure the right constructor is being selected
+            Instruction instruction = (Instruction) cons1.newInstance(consArgs);
+            instruction.setLabel(label);    //set label which is an inherited field
+            instruction.setOpcode(ins);     //set opcode which is an inherited field
+            return instruction;
+
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ex) {
+            ex.printStackTrace();
+        }
+        return null;
+
+    }
+
+    /**
+     * returns the class object representing the instruction type required for the given operation
+     * @param opcode the opcode for the specified transaction
+     * @return class object for the specific instruction or null if there is no such class object
+     */
+    private Class<?> getInstructionTypeCLass(String opcode) {
         StringBuilder opcd = new StringBuilder();
-        opcd.append(opcode.substring(0,1).toUpperCase()).append(opcode.substring(1));
-        for(Class<?> c:findAllClassesInProgram()){
-            if(c.getName().contains(opcd)){
+        opcd.append(opcode.substring(0, 1).toUpperCase()).append(opcode.substring(1));
+        //return findAllClassesInProgram().stream().filter((Class<?>c)->c.getName().contains(opcd)).findFirst().get();
+        for (Class<?> c : findAllClassesInProgram()) {
+            if (c.getName().contains(opcd)) {
                 return c;
             }
         }
@@ -190,62 +177,74 @@ public class Translator {
 
         List<File> roots = getRoots();  //find all the class roots
 
-        return buildClassList(roots);
+        return buildInstructionClassList(roots);
     }
 
-    private static List<File> getRoots(){
+    /**
+     * Looks through the java class path for the project to find all roots
+     * @return
+     */
+    private static List<File> getRoots() {
         List<File> roots = new ArrayList<>();
         String classpath = System.getProperty("java.class.path");
         String[] locations = classpath.split(System.getProperty("path.separator"));
         for (int i = 0; i < locations.length; i++) {
-          //    System.out.println("Location on the classpath: "+locations[i]);
             roots.add(new File(locations[i]));
         }
         return roots;
     }
 
-    private List<Class<?>> buildClassList(List<File> roots){
+    /**
+     * Using java class path roots, this method discovers all classes which inherit from Instruction and returns a list of them
+     * This includes both classes within and outside of jar files
+     * @param roots the list of roots on the class path
+     * @return a list of classes which are subclasses of Instruction
+     */
+    private List<Class<?>> buildInstructionClassList(List<File> roots) {
         List<File> classFilesNotInJars = new ArrayList<>();
         List<File> classFilesInJars = new ArrayList<>();
         List<Class<?>> instructionChildren = new ArrayList<>();
-            for (File f : roots) {
-                if (f.getName().contains(".jar")) {
-                    classFilesInJars.add(f);
-                }
-                Translator.findAllNonJarClasses(f, classFilesNotInJars);
+        for (File f : roots) {
+            if (f.getName().contains(".jar")) {
+                classFilesInJars.add(f);
             }
+            Translator.findAllNonJarClasses(f, classFilesNotInJars);
+        }
 
         List<File> commonListClassFiles = new ArrayList<>();
         commonListClassFiles.addAll(classFilesInJars);
         commonListClassFiles.addAll(classFilesNotInJars);
 
 
-        for(Class<?> c:convertFilesToClasses(commonListClassFiles)){
-            if(Instruction.class.isAssignableFrom(c)){
+        for (Class<?> c : convertFilesToClasses(commonListClassFiles)) {
+            if (Instruction.class.isAssignableFrom(c)) {
                 instructionChildren.add(c);
             }
         }
         return instructionChildren;
     }
 
-
-    //TODO need to refactor this code and change variable names
-    private List<String> findAllClassesInAJar(String path){
+    /**
+     * Finds all class files that main be contained within a jar file
+     * @param path the path for a jar file
+     * @return a list of the names of all class names that came from jars
+     */
+    private List<String> findAllClassesInAJar(String path) {
         List<String> classNamesInJar = new ArrayList<>();
-        JarFile jar = null;
+        JarFile jarFile = null;
         try {
-            jar = new JarFile(path);
-            Enumeration e = jar.entries();
-            URL [] urls = {new URL("jar:file:" + path + "!/")};
-            URLClassLoader cls = URLClassLoader.newInstance(urls);
+            jarFile = new JarFile(path);
+            Enumeration e = jarFile.entries();
+            URL[] urls = {new URL("jar:file:" + path + "!/")};
+            URLClassLoader clsLoader = URLClassLoader.newInstance(urls);
 
-            while(e.hasMoreElements()){
+            while (e.hasMoreElements()) {
                 JarEntry je = (JarEntry) e.nextElement();
-                if(je.isDirectory() || !je.getName().endsWith(".class")){
+                if (je.isDirectory() || !je.getName().endsWith(".class")) {
                     continue;
                 }
                 //-6 to account for the class extension
-                String className = je.getName().substring(0, je.getName().length()-6);
+                String className = je.getName().substring(0, je.getName().length() - 6);
                 classNamesInJar.add(className);
             }
 
@@ -257,34 +256,46 @@ public class Translator {
 
     }
 
-    private static void findAllNonJarClasses(File fileOrFolder, List<File> stor){
+    /**
+     * Recursively finds all entries outside of jar files which have extension .class
+     * @param fileOrFolder to search in, e.g. target
+     * @param stor the list to save results in as part of the recursive call
+     */
+    private static void findAllNonJarClasses(File fileOrFolder, List<File> stor) {
         stor.add(fileOrFolder);
-        if(fileOrFolder.isFile()){
+        if (fileOrFolder.isFile()) {
             return;
         }
         try {
+            //TODO take care of potential null pointer exception
             for (File f : fileOrFolder.listFiles()) {
                 stor.add(f);
                 if (f.isDirectory()) {
                     findAllNonJarClasses(f, stor);
                 }
             }
-        }catch(NullPointerException ex){
+        } catch (NullPointerException ex) {
             ex.printStackTrace();
             System.out.println("Empty folder!");
         }
     }
 
+    /**
+     * Takes in a list of files generated from the class path search and converts them to class names
+     * which can be used to create objects via reflection
+     * @param files list of files
+     * @return list of Classes
+     */
     private static List<Class<?>> convertFilesToClasses(List<File> files) {
         List<Class<?>> clazzes = new ArrayList<>();
         String formattedPath = "";
         for (File f : files) {
             if (f.getName().endsWith(".class")) {
                 try {
-                    for(File rootFile:getRoots()){
-                        if(f.getAbsolutePath().contains(rootFile.getAbsolutePath())){
+                    for (File rootFile : getRoots()) {
+                        if (f.getAbsolutePath().contains(rootFile.getAbsolutePath())) {
                             int rootPathLength = rootFile.getAbsolutePath().length();
-                            formattedPath = f.getAbsolutePath().substring(rootPathLength+1, f.getAbsolutePath().length()-6);
+                            formattedPath = f.getAbsolutePath().substring(rootPathLength + 1, f.getAbsolutePath().length() - 6);
                             formattedPath = formattedPath.replace("/", ".");
                         }
                     }
@@ -298,10 +309,4 @@ public class Translator {
         return clazzes;
     }
 
-
-
-    public static void main(String [] args){
-        Translator t = new Translator("testAddInstruction");
-        t.findAllClassesInProgram();
-    }
 }

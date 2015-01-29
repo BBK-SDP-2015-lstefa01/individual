@@ -11,11 +11,11 @@ public class OutInstruction extends Instruction {
 
     private int op1;
 
-    public OutInstruction(String label, String opcode){
+    public OutInstruction(String label, String opcode) {
         super(label, opcode);
     }
 
-    public OutInstruction(String label, int op1){
+    public OutInstruction(String label, int op1) {
         this(label, "out");
         this.op1 = op1;
     }
@@ -28,7 +28,7 @@ public class OutInstruction extends Instruction {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return super.toString() + " " + "value of register " + op1 + "is printed on the console";
     }
 }

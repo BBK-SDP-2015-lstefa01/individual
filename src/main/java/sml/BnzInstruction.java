@@ -13,11 +13,11 @@ public class BnzInstruction extends Instruction {
     private int op1;
     private String newLabel;
 
-    public BnzInstruction(String label, String opcode){
+    public BnzInstruction(String label, String opcode) {
         super(label, opcode);
     }
 
-    public BnzInstruction(String label, int op1, String newLabel){
+    public BnzInstruction(String label, int op1, String newLabel) {
         this(label, "bnz");
         this.op1 = op1;
         this.newLabel = newLabel;
@@ -25,9 +25,9 @@ public class BnzInstruction extends Instruction {
 
     @Override
     public void execute(Machine m) {
-        if(m.getRegisters().getRegister(op1)!=0){   //check register is not 0
-            for(Instruction i: m.getProg()){
-                if(i.label.equals(newLabel)){       //find the required instruction
+        if (m.getRegisters().getRegister(op1) != 0) {   //check register is not 0
+            for (Instruction i : m.getProg()) {
+                if (i.label.equals(newLabel)) {       //find the required instruction
                     int index = m.getProg().indexOf(i);
                     m.setPc(m.getProg().indexOf(i));
                 }
@@ -39,7 +39,7 @@ public class BnzInstruction extends Instruction {
     }
 
     @Override
-    public String toString(){
-        return super.toString() + " jump to instruction " + newLabel +" next";
+    public String toString() {
+        return super.toString() + " jump to instruction " + newLabel + " next";
     }
 }
