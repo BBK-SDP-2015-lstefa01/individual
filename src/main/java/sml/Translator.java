@@ -34,7 +34,7 @@ public class Translator {
     // return "no errors were detected"
     public boolean readAndTranslate(Labels lab, ArrayList<Instruction> prog) {
 
-        try (Scanner sc = new Scanner(new File(fileName))) {
+        try (Scanner sc = new Scanner(new File(fileName))) {    //relies on default encoding
             // Scanner attached to the file chosen by the user
             labels = lab;
             labels.reset();
