@@ -123,19 +123,28 @@ public class Translator {
      */
     private Instruction getInstructionObject(String ins, String label) {
 
-        Class<?> cls = null;
-        Constructor cons = null;
-        Object[] consArgs = null;
+        Class<?> cls;       //the appropriate instruction class
+        Constructor cons = null;   //constructor for the instruction class
+        Object[] consArgs;  //array of arguments to pass to the instruction subtype constructor
 
         try {
-            cls = getInstructionTypeCLass(ins);
+            cls = getInstructionTypeClass(ins);
             Constructor[] constructs = cls.getConstructors();
             //TODO need to find a more robust way to select the correct constructor
-            cons = constructs[1];
+            for(int i=0; i<constructs.length; i++){
+                Class [] paramTypes = constructs[i].getParameterTypes();
+                for(int j =0; j<paramTypes.length; j++){
+                    if(!paramTypes[j].getName().equals("java.lang.String")){
+                        break;
+                    }
+                }
+                cons = constructs[i];
+            }
+
+           // cons = constructs[1];
             Class[] paramType = cons.getParameterTypes();
             consArgs = new Object[paramType.length];
 
-            //TODO test double values are supported?
             for (int i = 1; i < paramType.length; i++) {
                 if (paramType[i].getTypeName().equals("int")) {
                     consArgs[i] = scanInt();
@@ -145,8 +154,8 @@ public class Translator {
             }
             Constructor cons1 = cls.getConstructor(paramType);  //ensure the right constructor is being selected
             Instruction instruction = (Instruction) cons1.newInstance(consArgs);
-            instruction.setLabel(label);    //set label which is an inherited field
-            instruction.setOpcode(ins);     //set opcode which is an inherited field
+            instruction.label = label;  //set label which is an inherited field
+            instruction.opcode = ins;   //set opcode which is an inherited field
             return instruction;
 
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ex) {
@@ -161,7 +170,7 @@ public class Translator {
      * @param opcode the opcode for the specified transaction
      * @return class object for the specific instruction or null if there is no such class object
      */
-    private Class<?> getInstructionTypeCLass(String opcode) {
+    private Class<?> getInstructionTypeClass(String opcode) {
         StringBuilder opcd = new StringBuilder();
         opcd.append(opcode.substring(0, 1).toUpperCase()).append(opcode.substring(1));
         //return findAllClassesInProgram().stream().filter((Class<?>c)->c.getName().contains(opcd)).findFirst().get();
@@ -266,17 +275,13 @@ public class Translator {
         if (fileOrFolder.isFile()) {
             return;
         }
-        try {
-            //TODO take care of potential null pointer exception
+        if(fileOrFolder.listFiles()!=null){
             for (File f : fileOrFolder.listFiles()) {
                 stor.add(f);
                 if (f.isDirectory()) {
                     findAllNonJarClasses(f, stor);
                 }
             }
-        } catch (NullPointerException ex) {
-            ex.printStackTrace();
-            System.out.println("Empty folder!");
         }
     }
 

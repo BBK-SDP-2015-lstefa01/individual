@@ -6,11 +6,6 @@ package sml;
  * @author someone
  */
 
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
 public abstract class Instruction {
     protected String label;
     protected String opcode;

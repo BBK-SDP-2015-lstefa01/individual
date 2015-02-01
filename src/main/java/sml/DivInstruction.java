@@ -7,6 +7,7 @@ import lombok.Setter;
  * Created by liliya on 17/01/2015.
  */
 @Getter
+@Setter
 public class DivInstruction extends Instruction {
 
     private int op1;

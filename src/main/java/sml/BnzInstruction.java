@@ -26,7 +26,7 @@ public class BnzInstruction extends Instruction {
     @Override
     public void execute(Machine m) {
         if (m.getRegisters().getRegister(op1) != 0) {   //check register is not 0
-            for (Instruction i : m.getProg()) {
+            for (sml.Instruction i : m.getProg()) {
                 if (i.label.equals(newLabel)) {       //find the required instruction
                     int index = m.getProg().indexOf(i);
                     m.setPc(m.getProg().indexOf(i));
@@ -34,6 +34,10 @@ public class BnzInstruction extends Instruction {
 
             }
 
+            }
+        else{
+            //TODO need to handle this more gracefully that println statement
+            System.out.println("Jump not executed as the register is empty");
         }
 
     }
@@ -43,3 +47,5 @@ public class BnzInstruction extends Instruction {
         return super.toString() + " jump to instruction " + newLabel + " next";
     }
 }
+
+

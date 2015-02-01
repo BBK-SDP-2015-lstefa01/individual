@@ -1,12 +1,14 @@
 package sml;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 /**
  * Created by liliya on 17/01/2015.
  */
 @Getter
+@Setter
 public class OutInstruction extends Instruction {
 
     private int op1;
