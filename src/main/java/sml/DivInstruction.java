@@ -36,7 +36,7 @@ public class DivInstruction extends Instruction {
                 throw new ArithmeticException("Division by 0");
             }
         } catch (ArithmeticException ae) {
-            System.out.println("Instruction " + super.label + " attempted to divide by 0. Operation will be skipped");
+            System.out.println("Instruction " + super.label + " attempted to divide by 0. Operation will be skipped and no registers updated");
         }
 
     }
@@ -45,5 +45,6 @@ public class DivInstruction extends Instruction {
     public String toString() {
         return super.toString() + " " + op1 + " / " + op2 + " to " + result;
     }
+
 
 }

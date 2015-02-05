@@ -140,10 +140,9 @@ public class Translator {
                 }
                 cons = constructs[i];
             }
-
-           // cons = constructs[1];
+            if(cons == null) {throw new RuntimeException("No constructor for this instruction exists!");}
             Class[] paramType = cons.getParameterTypes();
-            consArgs = new Object[paramType.length];
+            consArgs = new Object[paramType.length];        //parameters of constructor selected
 
             for (int i = 1; i < paramType.length; i++) {
                 if (paramType[i].getTypeName().equals("int")) {
@@ -152,8 +151,8 @@ public class Translator {
                     consArgs[i] = scan();
                 }
             }
-            Constructor cons1 = cls.getConstructor(paramType);  //ensure the right constructor is being selected
-            Instruction instruction = (Instruction) cons1.newInstance(consArgs);
+            cons = cls.getConstructor(paramType);  //ensure the right constructor is being selected
+            Instruction instruction = (Instruction) cons.newInstance(consArgs);
             instruction.label = label;  //set label which is an inherited field
             instruction.opcode = ins;   //set opcode which is an inherited field
             return instruction;
@@ -211,17 +210,15 @@ public class Translator {
      */
     private List<Class<?>> buildInstructionClassList(List<File> roots) {
         List<File> classFilesNotInJars = new ArrayList<>();
-        List<File> classFilesInJars = new ArrayList<>();
         List<Class<?>> instructionChildren = new ArrayList<>();
         for (File f : roots) {
             if (f.getName().contains(".jar")) {
-                classFilesInJars.add(f);
+                continue;
             }
             Translator.findAllNonJarClasses(f, classFilesNotInJars);
         }
 
         List<File> commonListClassFiles = new ArrayList<>();
-        commonListClassFiles.addAll(classFilesInJars);
         commonListClassFiles.addAll(classFilesNotInJars);
 
 
@@ -233,39 +230,9 @@ public class Translator {
         return instructionChildren;
     }
 
-    /**
-     * Finds all class files that main be contained within a jar file
-     * @param path the path for a jar file
-     * @return a list of the names of all class names that came from jars
-     */
-    private List<String> findAllClassesInAJar(String path) {
-        List<String> classNamesInJar = new ArrayList<>();
-        JarFile jarFile = null;
-        try {
-            jarFile = new JarFile(path);
-            Enumeration e = jarFile.entries();
-            URL[] urls = {new URL("jar:file:" + path + "!/")};
-            URLClassLoader clsLoader = URLClassLoader.newInstance(urls);
-
-            while (e.hasMoreElements()) {
-                JarEntry je = (JarEntry) e.nextElement();
-                if (je.isDirectory() || !je.getName().endsWith(".class")) {
-                    continue;
-                }
-                //-6 to account for the class extension
-                String className = je.getName().substring(0, je.getName().length() - 6);
-                classNamesInJar.add(className);
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return classNamesInJar;
-
-    }
 
     /**
+     * Helper class
      * Recursively finds all entries outside of jar files which have extension .class
      * @param fileOrFolder to search in, e.g. target
      * @param stor the list to save results in as part of the recursive call
@@ -275,7 +242,7 @@ public class Translator {
         if (fileOrFolder.isFile()) {
             return;
         }
-        if(fileOrFolder.listFiles()!=null){
+            if(!fileOrFolder.exists()){ throw new RuntimeException("No classes have been found");}
             for (File f : fileOrFolder.listFiles()) {
                 stor.add(f);
                 if (f.isDirectory()) {
@@ -283,9 +250,9 @@ public class Translator {
                 }
             }
         }
-    }
 
     /**
+     * Helper method
      * Takes in a list of files generated from the class path search and converts them to class names
      * which can be used to create objects via reflection
      * @param files list of files
