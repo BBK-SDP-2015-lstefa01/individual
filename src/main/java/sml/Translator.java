@@ -4,11 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.*;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 /*
  * The translator of a <b>S</b><b>M</b>al<b>L</b> program.
@@ -121,7 +117,7 @@ public class Translator {
      * @param label the label of the instruction line
      * @return the new Instruction object
      */
-    private Instruction getInstructionObject(String ins, String label) {
+     Instruction getInstructionObject(String ins, String label) {
 
         Class<?> cls;       //the appropriate instruction class
         Constructor cons = null;   //constructor for the instruction class

@@ -1,3 +1,5 @@
+package sml;
+
 import org.junit.Test;
 import sml.Labels;
 

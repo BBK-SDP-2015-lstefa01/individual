@@ -27,6 +27,7 @@ public class BnzInstruction extends Instruction {
         this.newLabel = newLabel;
     }
 
+    //TODO not working properly at the moment
     @Override
     public void execute(Machine m) {
         if (m.getRegisters().getRegister(op1) != 0) {   //check register is not 0

@@ -1,3 +1,5 @@
+package sml;
+
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -26,7 +28,7 @@ public class TranslatorTest {
        // assertEquals(testLin, trans.getInstruction("lin"));
 
     }
-
+//TODO this test is not passing at the moment
     @Test
     public void testReadAndTranslate(){
         Translator trans = new Translator("testOneLineFileInstruction.txt");
@@ -34,6 +36,15 @@ public class TranslatorTest {
         ArrayList<Instruction> prog = new ArrayList<>();
 
         assertTrue(trans.readAndTranslate(lab, prog));
+    }
+
+    @Test
+    public void testGetInstructionObject(){
+
+        Translator trans = new Translator("test");
+        assertEquals("sml.LinInstruction", trans.getInstructionObject("lin", "l1").getClass().getName());
+        assertEquals("a1", trans.getInstructionObject("add", "a1").label);
+        assertEquals("add", trans.getInstructionObject("add", "a1").opcode);
     }
 
 }
