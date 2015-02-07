@@ -32,7 +32,6 @@ public class BnzInstruction extends Instruction {
         if (m.getRegisters().getRegister(op1) != 0) {   //check register is not 0
             for (Instruction i : m.getProg()) {
                 if (i.label.equals(newLabel)) {       //find the required instruction
-                    m.getProg().indexOf(i);
                     m.setPc(m.getProg().indexOf(i));
                 }
 

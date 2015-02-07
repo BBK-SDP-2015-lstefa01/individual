@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.logging.Logger;
 
 /*
  * The translator of a <b>S</b><b>M</b>al<b>L</b> program.
@@ -14,12 +15,14 @@ public class Translator {
     // word + line is the part of the current line that's not yet processed
     // word has no whitespace
     // If word and line are not empty, line begins with whitespace
-    private String line = "";
+    public String line = "";
     private Labels labels; // The labels of the program being translated
     private ArrayList<Instruction> program; // The program to be created
     private String fileName; // source file of SML code
 
     private static final String SRC = "src";
+
+    private final static Logger LOGGER = Logger.getLogger(BnzInstruction.class.getName());
 
     public Translator(String fileName) {
         this.fileName = SRC + "/" + fileName;
@@ -47,8 +50,6 @@ public class Translator {
             while (line != null) {
                 // Store the label in label
                 String label = scan();
-                //TODO check if the label is duplicate
-
                 if (label.length() > 0) {
                     Instruction ins = getInstruction(label);
                     if (ins != null) {
@@ -74,8 +75,9 @@ public class Translator {
     // removed. Translate line into an instruction with label label
     // and return the instruction
     public Instruction getInstruction(String label) {
-        if (line.equals(""))
+        if (line.equals("")) {
             return null;
+        }
         String ins = scan();    //get the opcode for the instruction
         return getInstructionObject(ins, label);    //generate and return new instruction object
     }
@@ -86,8 +88,9 @@ public class Translator {
      */
     private String scan() {
         line = line.trim();
-        if (line.length() == 0)
+        if (line.length() == 0) {
             return "";
+        }
         int i = 0;
         while (i < line.length() && line.charAt(i) != ' ' && line.charAt(i) != '\t') {
             i = i + 1;
@@ -111,64 +114,78 @@ public class Translator {
         }
     }
 
+    /*
+    The approach taken to find the required instruction class is as follows:
+    1. Find all roots in the classpath
+    2. Using this list, determine all folders which are not jar files and extract all .class files from them
+    3. Convert the given files to a list of Class objects
+    4. Find the class object required
+     */
+
     /**
      * Takes in an instruction opcode and label and returns an Instruction object of the right type
-     * @param ins the opcode of the instruction
+     *
+     * @param ins   the opcode of the instruction
      * @param label the label of the instruction line
      * @return the new Instruction object
      */
-     Instruction getInstructionObject(String ins, String label) {
+    Instruction getInstructionObject(String ins, String label) {
 
         Class<?> cls;       //the appropriate instruction class
         Constructor cons = null;   //constructor for the instruction class
         Object[] consArgs;  //array of arguments to pass to the instruction subtype constructor
+        Class[] paramTypes; //list of parameter types that a constructor has
 
         try {
             cls = getInstructionTypeClass(ins);
             Constructor[] constructs = cls.getConstructors();
-            //TODO need to find a more robust way to select the correct constructor
-            for(int i=0; i<constructs.length; i++){
-                Class [] paramTypes = constructs[i].getParameterTypes();
-                for(int j =0; j<paramTypes.length; j++){
-                    if(!paramTypes[j].getName().equals("java.lang.String")){
+            for (Constructor c : constructs) {
+                paramTypes = c.getParameterTypes();
+                for (Class cl : paramTypes) {
+                    /* this check indicates that the constructor takes an int, i.e. a register, indicating it is a
+                       suitable constructor to create the correct instruction type*/
+                    if (cl.getName().equals("int")) {
                         break;
                     }
                 }
-                cons = constructs[i];
+                cons = c;
             }
-            if(cons == null) {throw new RuntimeException("No constructor for this instruction exists!");}
-            Class[] paramType = cons.getParameterTypes();
-            consArgs = new Object[paramType.length];        //parameters of constructor selected
+            if (cons == null) {
+                throw new RuntimeException("No constructor for this instruction type exists!");
+            }
+            paramTypes = cons.getParameterTypes();
+            consArgs = new Object[paramTypes.length];        //parameters of constructor selected
 
-            for (int i = 1; i < paramType.length; i++) {
-                if (paramType[i].getTypeName().equals("int")) {
+            for (int i = 1; i < paramTypes.length; i++) {
+                if (paramTypes[i].getTypeName().equals("int")) {
                     consArgs[i] = scanInt();
-                } else if (paramType[i].getTypeName().equals("java.lang.String")) {
+                } else if (paramTypes[i].getTypeName().equals("java.lang.String")) {
                     consArgs[i] = scan();
                 }
             }
-            cons = cls.getConstructor(paramType);  //ensure the right constructor is being selected
+            cons = cls.getConstructor(paramTypes);  //ensure the right constructor is being selected
             Instruction instruction = (Instruction) cons.newInstance(consArgs);
             instruction.label = label;  //set label which is an inherited field
             instruction.opcode = ins;   //set opcode which is an inherited field
             return instruction;
 
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ex) {
-            ex.printStackTrace();
+            LOGGER.severe("Something went wrong while trying to create the correct instruction object");
         }
         return null;
 
     }
 
     /**
+     * Helper method
      * returns the class object representing the instruction type required for the given operation
+     *
      * @param opcode the opcode for the specified transaction
      * @return class object for the specific instruction or null if there is no such class object
      */
     private Class<?> getInstructionTypeClass(String opcode) {
         StringBuilder opcd = new StringBuilder();
         opcd.append(opcode.substring(0, 1).toUpperCase()).append(opcode.substring(1));
-        //return findAllClassesInProgram().stream().filter((Class<?>c)->c.getName().contains(opcd)).findFirst().get();
         for (Class<?> c : findAllClassesInProgram()) {
             if (c.getName().contains(opcd)) {
                 return c;
@@ -185,22 +202,26 @@ public class Translator {
     }
 
     /**
+     * Helper method
      * Looks through the java class path for the project to find all roots
-     * @return
+     *
+     * @return a list of all root files/dirs
      */
     private static List<File> getRoots() {
         List<File> roots = new ArrayList<>();
         String classpath = System.getProperty("java.class.path");
         String[] locations = classpath.split(System.getProperty("path.separator"));
-        for (int i = 0; i < locations.length; i++) {
-            roots.add(new File(locations[i]));
+        for (String loc : locations) {
+            roots.add(new File(loc));
         }
         return roots;
     }
 
     /**
+     * Helper method
      * Using java class path roots, this method discovers all classes which inherit from Instruction and returns a list of them
      * This includes both classes within and outside of jar files
+     *
      * @param roots the list of roots on the class path
      * @return a list of classes which are subclasses of Instruction
      */
@@ -213,12 +234,7 @@ public class Translator {
             }
             Translator.findAllNonJarClasses(f, classFilesNotInJars);
         }
-
-        List<File> commonListClassFiles = new ArrayList<>();
-        commonListClassFiles.addAll(classFilesNotInJars);
-
-
-        for (Class<?> c : convertFilesToClasses(commonListClassFiles)) {
+        for (Class<?> c : convertFilesToClasses(classFilesNotInJars)) {
             if (Instruction.class.isAssignableFrom(c)) {
                 instructionChildren.add(c);
             }
@@ -228,17 +244,21 @@ public class Translator {
 
 
     /**
-     * Helper class
+     * Helper method
      * Recursively finds all entries outside of jar files which have extension .class
+     *
      * @param fileOrFolder to search in, e.g. target
-     * @param stor the list to save results in as part of the recursive call
+     * @param stor         the list to save results in as part of the recursive call
      */
     private static void findAllNonJarClasses(File fileOrFolder, List<File> stor) {
+        if (!fileOrFolder.exists()) {
+            return;
+        }
         stor.add(fileOrFolder);
         if (fileOrFolder.isFile()) {
             return;
         }
-            if(!fileOrFolder.exists()){ throw new RuntimeException("No classes have been found");}
+        if (fileOrFolder.listFiles() != null) {
             for (File f : fileOrFolder.listFiles()) {
                 stor.add(f);
                 if (f.isDirectory()) {
@@ -247,10 +267,13 @@ public class Translator {
             }
         }
 
+    }
+
     /**
      * Helper method
      * Takes in a list of files generated from the class path search and converts them to class names
      * which can be used to create objects via reflection
+     *
      * @param files list of files
      * @return list of Classes
      */
@@ -269,8 +292,7 @@ public class Translator {
                     }
                     clazzes.add(Class.forName(formattedPath));
                 } catch (ClassNotFoundException e) {
-                    System.out.println("Could not identify path to load class from");
-                    e.printStackTrace();
+                    LOGGER.severe("Could not identify path to load class from");
                 }
             }
         }

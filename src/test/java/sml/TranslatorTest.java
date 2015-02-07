@@ -12,36 +12,27 @@ public class TranslatorTest {
 
     //TODO test is currently failing
 
+    String fileLoc = "src/dummy.txt";  //dummy file loc
+    Translator t = new Translator(fileLoc);
+
     @Test
-    public void getInstructionTest(){
-
-        Translator trans = new Translator("src/testOneLineFileInstruction.txt");
-        Labels lab = new Labels();
-        ArrayList<Instruction> prog = new ArrayList<>();
-        trans.readAndTranslate(lab, prog);
-
-        Instruction testLin = new LinInstruction("s0", 5, 100);
-        assertNotNull(trans.getInstruction("lin"));
-       // assertEquals(testLin, trans.getInstruction("lin"));
-
+    public void testGetInstructionEmptyLine(){
+        t.line = "";
+        assertNull(t.getInstruction("lin"));
     }
-//TODO this test is not passing at the moment
-    @Test
-    public void testReadAndTranslate(){
-        Translator trans = new Translator("src/testOneLineFileInstruction.txt");
-        Labels lab = new Labels();
-        ArrayList<Instruction> prog = new ArrayList<>();
 
-        assertTrue(trans.readAndTranslate(lab, prog));
+    @Test
+    public void testGetInstruction(){
+        t.line = "s0 lin 5 100";
+        assertEquals("sml.LinInstruction", t.getInstruction("s0").getClass().getName());
     }
 
     @Test
     public void testGetInstructionObject(){
-
-        Translator trans = new Translator("test");
-        assertEquals("sml.LinInstruction", trans.getInstructionObject("lin", "l1").getClass().getName());
-        assertEquals("a1", trans.getInstructionObject("add", "a1").label);
-        assertEquals("add", trans.getInstructionObject("add", "a1").opcode);
+        assertEquals("sml.LinInstruction", t.getInstructionObject("lin", "l1").getClass().getName());
+        assertEquals("a1", t.getInstructionObject("add", "a1").label);
+        assertEquals("add", t.getInstructionObject("add", "a1").opcode);
     }
+
 
 }

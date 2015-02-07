@@ -56,8 +56,7 @@ public class Machine {
     public String toString() {
         StringBuffer s = new StringBuffer();
         for (int i = 0; i != getProg().size(); i++) {
-            //TODO need to make sure the skipped instructions are not printed out
-            s.append(getProg().get(i) + "\n");
+            s.append(getProg().get(i)).append("\n");
         }
         return s.toString();
     }
@@ -74,4 +73,5 @@ public class Machine {
             ins.execute(this);
         }
     }
+
 }

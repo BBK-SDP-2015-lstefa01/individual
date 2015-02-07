@@ -11,24 +11,17 @@ import static org.junit.Assert.*;
  */
 public class MachineTest {
 
-    Machine m;
+    Machine m = new Machine();
 
     public Machine buildUp(){
 
-        Machine m = new Machine();
         Instruction testLin = new LinInstruction("l14", 5, 15);
-       // Instruction testLin2 = new LinInstruction("l15", 4, 20);
-      //  Instruction testAdd = new AddInstruction("a23", 10, 5, 4);
         ArrayList<Instruction> testProg = new ArrayList<>();
         testProg.add(testLin);
-       // testProg.add(testLin2);
-       // testProg.add(testAdd);
         m.setProg(testProg);
 
         Labels labels = new Labels();
         labels.addLabel("l14");
-       // labels.addLabel("l15");
-       // labels.addLabel("a23");
         return m;
 
     }
@@ -37,6 +30,7 @@ public class MachineTest {
     public void createNewMachineTest(){
         assertNotNull(new Machine());
     }
+
     @Test
     public void toStringTest(){
 
@@ -46,8 +40,12 @@ public class MachineTest {
 
     }
 
-    public void tearDown(){
+    @Test
+    public void testExecute(){
+        buildUp();
+        m.execute();
 
+        assertEquals(15, m.getRegisters().getRegister(5));
     }
 
 }

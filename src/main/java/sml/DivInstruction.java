@@ -2,6 +2,8 @@ package sml;
 
 import lombok.Getter;
 
+import java.util.logging.Logger;
+
 /**
  * Class used to create DivInstruction object, which divides the values contained in two registers
  * and stores teh result in a third(which may be one of the first 2) registers
@@ -14,6 +16,8 @@ public class DivInstruction extends Instruction {
     private int op1;
     private int op2;
     private int result;
+
+    private final static Logger LOGGER = Logger.getLogger(BnzInstruction.class.getName());
 
     public DivInstruction(String label, String opcode) {
         super(label, opcode);
@@ -37,8 +41,8 @@ public class DivInstruction extends Instruction {
                 throw new ArithmeticException("Division by 0");
             }
         } catch (ArithmeticException ae) {
-            System.out.println("Instruction " + super.label + " attempted to perform division by 0." + "\n" +
-                               "Operation will be skipped and no registers updated");
+            LOGGER.warning("Instruction " + super.label + " attempted to perform division by 0." + "\n" +
+                    "Operation will be skipped and no registers updated");
         }
 
     }
