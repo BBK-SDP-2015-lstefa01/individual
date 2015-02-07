@@ -15,7 +15,7 @@ public class Translator {
     // word + line is the part of the current line that's not yet processed
     // word has no whitespace
     // If word and line are not empty, line begins with whitespace
-    public String line = "";
+    private String line = "";
     private Labels labels; // The labels of the program being translated
     private ArrayList<Instruction> program; // The program to be created
     private String fileName; // source file of SML code
