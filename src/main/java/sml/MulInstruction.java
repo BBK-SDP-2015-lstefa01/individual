@@ -3,6 +3,8 @@ package sml;
 import lombok.Getter;
 
 /**
+ * This class is used to create a MulInstruction object which calculates the product of the values
+ * in two registers specified and stores it in another register
  * Created by liliya on 17/01/2015.
  */
 @Getter

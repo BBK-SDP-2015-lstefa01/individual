@@ -1,7 +1,6 @@
 package sml;
 
 import org.junit.Test;
-import sml.Labels;
 
 import static org.junit.Assert.*;
 

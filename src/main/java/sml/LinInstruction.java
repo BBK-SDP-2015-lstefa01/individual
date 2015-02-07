@@ -3,7 +3,8 @@ package sml;
 import lombok.Getter;
 
 /**
- * This class ....
+ * This class create an object of type LinInstruction
+ * this is an instruction which takes a value and loads it into a register
  *
  * @author someone
  */

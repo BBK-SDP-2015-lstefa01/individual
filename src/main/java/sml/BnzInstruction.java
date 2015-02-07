@@ -1,15 +1,15 @@
 package sml;
 
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.logging.Logger;
 
 /**
+ * Branch instruction type: jumps to execute the instruction with the label specified
+ * Unless the register specified in the branch instruction is blank-a message is displayed in this case
  * Created by liliya on 17/01/2015.
  */
 @Getter
-@Setter
 public class BnzInstruction extends Instruction {
 
     private int op1;
@@ -27,7 +27,6 @@ public class BnzInstruction extends Instruction {
         this.newLabel = newLabel;
     }
 
-    //TODO not working properly at the moment
     @Override
     public void execute(Machine m) {
         if (m.getRegisters().getRegister(op1) != 0) {   //check register is not 0
@@ -38,11 +37,8 @@ public class BnzInstruction extends Instruction {
                 }
 
             }
-            }
-        else{
-            //TODO need to handle this more gracefully that println statement
-           // System.out.println("Jump not executed as the register is empty");
-            LOGGER.info("\"Jump to " + newLabel +" executed as the register " + op1 + "is empty\"");
+        } else {
+            LOGGER.info("\"Jump to " + newLabel + " not executed as the register " + op1 + " is empty\"");
         }
 
     }

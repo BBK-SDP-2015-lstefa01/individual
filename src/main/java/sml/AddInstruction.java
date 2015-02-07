@@ -1,12 +1,9 @@
 package sml;
 
 import lombok.Getter;
-import lombok.Setter;
 
 /**
- * This class ....
- *
- * @author someone
+ * This class is used to create a new Instruction used to add the values of two registers together
  */
 
 @Getter

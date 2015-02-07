@@ -1,7 +1,6 @@
 package sml;
 
 import org.junit.Test;
-import sml.*;
 
 import java.util.ArrayList;
 

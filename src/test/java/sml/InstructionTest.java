@@ -1,8 +1,6 @@
 package sml;
 
 import org.junit.Test;
-import sml.AddInstruction;
-import sml.Instruction;
 
 import static org.junit.Assert.*;
 

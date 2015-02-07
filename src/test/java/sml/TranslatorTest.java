@@ -1,10 +1,7 @@
 package sml;
 
 import static org.junit.Assert.*;
-
 import org.junit.Test;
-import org.junit.Test.*;
-import sml.*;
 
 import java.util.ArrayList;
 
@@ -18,7 +15,7 @@ public class TranslatorTest {
     @Test
     public void getInstructionTest(){
 
-        Translator trans = new Translator("testOneLineFileInstruction.txt");
+        Translator trans = new Translator("src/testOneLineFileInstruction.txt");
         Labels lab = new Labels();
         ArrayList<Instruction> prog = new ArrayList<>();
         trans.readAndTranslate(lab, prog);
@@ -31,7 +28,7 @@ public class TranslatorTest {
 //TODO this test is not passing at the moment
     @Test
     public void testReadAndTranslate(){
-        Translator trans = new Translator("testOneLineFileInstruction.txt");
+        Translator trans = new Translator("src/testOneLineFileInstruction.txt");
         Labels lab = new Labels();
         ArrayList<Instruction> prog = new ArrayList<>();
 

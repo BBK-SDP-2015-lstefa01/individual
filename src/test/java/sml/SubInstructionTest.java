@@ -1,10 +1,6 @@
 package sml;
 
 import org.junit.Test;
-import sml.AddInstruction;
-import sml.LinInstruction;
-import sml.Machine;
-import sml.SubInstruction;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

@@ -1,13 +1,14 @@
 package sml;
 
 import lombok.Getter;
-import lombok.Setter;
 
 /**
+ * Class used to create DivInstruction object, which divides the values contained in two registers
+ * and stores teh result in a third(which may be one of the first 2) registers
+ * Attempt to divide by 0 generates an ArithmeticExpression
  * Created by liliya on 17/01/2015.
  */
 @Getter
-@Setter
 public class DivInstruction extends Instruction {
 
     private int op1;
@@ -36,7 +37,8 @@ public class DivInstruction extends Instruction {
                 throw new ArithmeticException("Division by 0");
             }
         } catch (ArithmeticException ae) {
-            System.out.println("Instruction " + super.label + " attempted to divide by 0. Operation will be skipped and no registers updated");
+            System.out.println("Instruction " + super.label + " attempted to perform division by 0." + "\n" +
+                               "Operation will be skipped and no registers updated");
         }
 
     }
@@ -45,6 +47,5 @@ public class DivInstruction extends Instruction {
     public String toString() {
         return super.toString() + " " + op1 + " / " + op2 + " to " + result;
     }
-
 
 }
