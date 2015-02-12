@@ -10,7 +10,6 @@ import java.util.logging.Logger;
  * Created by liliya on 17/01/2015.
  */
 @Getter
-@Setter
 public class OutInstruction extends Instruction {
 
     private int op1;

@@ -79,7 +79,7 @@ public class Translator {
             return null;
         }
         String ins = scan();    //get the opcode for the instruction
-        return getInstructionObject(ins, label);    //generate and return new instruction object
+        return getInstructionObject(ins, label);    //generate and return new instruction object of the required class
     }
 
     /*
@@ -118,20 +118,23 @@ public class Translator {
     The approach taken to find the required instruction class is as follows:
     1. Find all roots in the classpath
     2. Using this list, determine all folders which are not jar files and extract all .class files from them
-    3. Convert the given files to a list of Class objects
-    4. Find the class object required
+    3. Convert the given files to a list of Class objects and only return the ones which are children of Instruction
+    4. Find the class object required for the specific instruction type from the class generated in 3 based on opcode
+
+    Point 1-3 are in essence not required for a solution which utlizes the opcode to determine the class name, but have been
+    left in the code as they can be leveraged towards a more sophisticated solution potentially which does not rely the developer
+    of future instructions to use the opcode+Instruction format to naming
      */
 
     /**
      * Takes in an instruction opcode and label and returns an Instruction object of the right type
-     *
      * @param ins   the opcode of the instruction
      * @param label the label of the instruction line
      * @return the new Instruction object
      */
     Instruction getInstructionObject(String ins, String label) {
 
-        Class<?> cls;       //the appropriate instruction class
+        Class<?> cls;       //the instruction class
         Constructor cons = null;   //constructor for the instruction class
         Object[] consArgs;  //array of arguments to pass to the instruction subtype constructor
         Class[] paramTypes; //list of parameter types that a constructor has
@@ -139,23 +142,23 @@ public class Translator {
         try {
             cls = getInstructionTypeClass(ins);
             Constructor[] constructs = cls.getConstructors();
+            //check all constructors the class has
             for (Constructor c : constructs) {
                 paramTypes = c.getParameterTypes();
-                for (Class cl : paramTypes) {
+                for (Class param_cl : paramTypes) {
                     /* this check indicates that the constructor takes an int, i.e. a register, indicating it is a
-                       suitable constructor to create the correct instruction type*/
-                    if (cl.getName().equals("int")) {
+                       suitable constructor to create the correct instruction type with*/
+                    if (param_cl.getName().equals("int")) {
                         break;
                     }
                 }
                 cons = c;
             }
             if (cons == null) {
-                throw new RuntimeException("No constructor for this instruction type exists!");
+                throw new RuntimeException("No suitable constructor for this instruction type exists!");
             }
             paramTypes = cons.getParameterTypes();
             consArgs = new Object[paramTypes.length];        //parameters of constructor selected
-
             for (int i = 1; i < paramTypes.length; i++) {
                 if (paramTypes[i].getTypeName().equals("int")) {
                     consArgs[i] = scanInt();
@@ -179,7 +182,6 @@ public class Translator {
     /**
      * Helper method
      * returns the class object representing the instruction type required for the given operation
-     *
      * @param opcode the opcode for the specified transaction
      * @return class object for the specific instruction or null if there is no such class object
      */
@@ -197,14 +199,12 @@ public class Translator {
     private List<Class<?>> findAllClassesInProgram() {
 
         List<File> roots = getRoots();  //find all the class roots
-
         return buildInstructionClassList(roots);
     }
 
     /**
      * Helper method
      * Looks through the java class path for the project to find all roots
-     *
      * @return a list of all root files/dirs
      */
     private static List<File> getRoots() {
@@ -221,7 +221,6 @@ public class Translator {
      * Helper method
      * Using java class path roots, this method discovers all classes which inherit from Instruction and returns a list of them
      * This includes both classes within and outside of jar files
-     *
      * @param roots the list of roots on the class path
      * @return a list of classes which are subclasses of Instruction
      */
