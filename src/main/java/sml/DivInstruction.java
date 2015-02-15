@@ -6,8 +6,9 @@ import java.util.logging.Logger;
 
 /**
  * Class used to create DivInstruction object, which divides the values contained in two registers
- * and stores teh result in a third(which may be one of the first 2) registers
- * Attempt to divide by 0 generates an ArithmeticExpression
+ * and stores the result in a third(which may be one of the first 2) registers
+ * Attempt to divide by 0 generates an ArithmeticExpression and the instruction being ignored with message logged to screen
+ * No registers get updated as part of an attempted division by 0
  * Created by liliya on 17/01/2015.
  */
 @Getter

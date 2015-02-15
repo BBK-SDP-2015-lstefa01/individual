@@ -6,6 +6,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /*
  * The translator of a <b>S</b><b>M</b>al<b>L</b> program.
@@ -75,11 +76,9 @@ public class Translator {
     // removed. Translate line into an instruction with label label
     // and return the instruction
     public Instruction getInstruction(String label) {
-        if (line.equals("")) {
-            return null;
-        }
-        String ins = scan();    //get the opcode for the instruction
-        return getInstructionObject(ins, label);    //generate and return new instruction object of the required class
+        if (line.equals("")) { return null;}
+        String ins = scan();                       //get the opcode for the instruction
+        return getInstructionObject(ins, label);  //generate and return new instruction object of the required class
     }
 
     /*
@@ -134,16 +133,15 @@ public class Translator {
      */
     Instruction getInstructionObject(String ins, String label) {
 
-        Class<?> cls;       //the instruction class
+        Class<?> cls;               //the instruction class
         Constructor cons = null;   //constructor for the instruction class
-        Object[] consArgs;  //array of arguments to pass to the instruction subtype constructor
-        Class[] paramTypes; //list of parameter types that a constructor has
+        Object[] consArgs;        //array of arguments to pass to the instruction subtype constructor
+        Class[] paramTypes;      //list of parameter types that a constructor has
 
         try {
-            cls = getInstructionTypeClass(ins);
+            cls = getInstructionTypeClass(ins);     //Get the class
             Constructor[] constructs = cls.getConstructors();
-            //check all constructors the class has
-            for (Constructor c : constructs) {
+            for (Constructor c : constructs) {  //check all constructors the class has
                 paramTypes = c.getParameterTypes();
                 for (Class param_cl : paramTypes) {
                     /* this check indicates that the constructor takes an int, i.e. a register, indicating it is a
@@ -152,13 +150,13 @@ public class Translator {
                         break;
                     }
                 }
-                cons = c;
+                cons = c;           //Get the constructor
             }
             if (cons == null) {
                 throw new RuntimeException("No suitable constructor for this instruction type exists!");
             }
-            paramTypes = cons.getParameterTypes();
-            consArgs = new Object[paramTypes.length];        //parameters of constructor selected
+            paramTypes = cons.getParameterTypes();            //get the parameter types
+            consArgs = new Object[paramTypes.length];        //get the actual constructor arguments
             for (int i = 1; i < paramTypes.length; i++) {
                 if (paramTypes[i].getTypeName().equals("int")) {
                     consArgs[i] = scanInt();
@@ -166,20 +164,19 @@ public class Translator {
                     consArgs[i] = scan();
                 }
             }
-            cons = cls.getConstructor(paramTypes);  //ensure the right constructor is being selected
             Instruction instruction = (Instruction) cons.newInstance(consArgs);
             instruction.label = label;  //set label which is an inherited field
             instruction.opcode = ins;   //set opcode which is an inherited field
             return instruction;
 
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ex) {
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException ex) {
             LOGGER.severe("Something went wrong while trying to create the correct instruction object");
         }
         return null;
 
     }
 
-    /**
+    /*
      * Helper method
      * returns the class object representing the instruction type required for the given operation
      * @param opcode the opcode for the specified transaction
@@ -202,7 +199,7 @@ public class Translator {
         return buildInstructionClassList(roots);
     }
 
-    /**
+    /*
      * Helper method
      * Looks through the java class path for the project to find all roots
      * @return a list of all root files/dirs
@@ -217,7 +214,7 @@ public class Translator {
         return roots;
     }
 
-    /**
+    /*
      * Helper method
      * Using java class path roots, this method discovers all classes which inherit from Instruction and returns a list of them
      * This includes both classes within and outside of jar files
@@ -226,26 +223,20 @@ public class Translator {
      */
     private List<Class<?>> buildInstructionClassList(List<File> roots) {
         List<File> classFilesNotInJars = new ArrayList<>();
-        List<Class<?>> instructionChildren = new ArrayList<>();
         for (File f : roots) {
             if (f.getName().contains(".jar")) {
                 continue;
             }
             Translator.findAllNonJarClasses(f, classFilesNotInJars);
         }
-        for (Class<?> c : convertFilesToClasses(classFilesNotInJars)) {
-            if (Instruction.class.isAssignableFrom(c)) {
-                instructionChildren.add(c);
-            }
-        }
-        return instructionChildren;
+        return convertFilesToClasses(classFilesNotInJars).stream()
+                                                         .filter(Instruction.class::isAssignableFrom)
+                                                         .collect(Collectors.toList());
     }
 
-
-    /**
+    /*
      * Helper method
      * Recursively finds all entries outside of jar files which have extension .class
-     *
      * @param fileOrFolder to search in, e.g. target
      * @param stor         the list to save results in as part of the recursive call
      */
@@ -268,16 +259,15 @@ public class Translator {
 
     }
 
-    /**
+    /*
      * Helper method
      * Takes in a list of files generated from the class path search and converts them to class names
      * which can be used to create objects via reflection
-     *
      * @param files list of files
      * @return list of Classes
      */
     private static List<Class<?>> convertFilesToClasses(List<File> files) {
-        List<Class<?>> clazzes = new ArrayList<>();
+        List<Class<?>> classes = new ArrayList<>();
         String formattedPath = "";
         for (File f : files) {
             if (f.getName().endsWith(".class")) {
@@ -285,17 +275,18 @@ public class Translator {
                     for (File rootFile : getRoots()) {
                         if (f.getAbsolutePath().contains(rootFile.getAbsolutePath())) {
                             int rootPathLength = rootFile.getAbsolutePath().length();
-                            formattedPath = f.getAbsolutePath().substring(rootPathLength + 1, f.getAbsolutePath().length() - 6);
-                            formattedPath = formattedPath.replace("/", ".");
+                            formattedPath = f.getAbsolutePath()
+                                             .substring(rootPathLength + 1, f.getAbsolutePath().length() - 6)
+                                             .replace("/", ".");
                         }
                     }
-                    clazzes.add(Class.forName(formattedPath));
+                    classes.add(Class.forName(formattedPath));
                 } catch (ClassNotFoundException e) {
                     LOGGER.severe("Could not identify path to load class from");
                 }
             }
         }
-        return clazzes;
+        return classes;
     }
 
 }

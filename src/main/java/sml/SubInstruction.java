@@ -3,6 +3,9 @@ package sml;
 import lombok.Getter;
 
 /**
+ * Class SubInstruction used to subtract values held in two pre-specified registers and store the result
+ * in a third or one of existing two registers as specified by the instruction
+ * Subtraction will be done out of the first of the specified operand registers
  * Created by liliya on 17/01/2015.
  */
 @Getter

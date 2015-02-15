@@ -4,6 +4,7 @@ import lombok.Getter;
 
 /**
  * This class is used to create a new Instruction used to add the values of two registers together
+ * into a new or one of the existing registers specified
  */
 
 @Getter

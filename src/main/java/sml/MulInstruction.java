@@ -4,7 +4,7 @@ import lombok.Getter;
 
 /**
  * This class is used to create a MulInstruction object which calculates the product of the values
- * in two registers specified and stores it in another register
+ * in two registers specified and stores that product in a new register or one of the two existing ones
  * Created by liliya on 17/01/2015.
  */
 @Getter

@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 
 /**
  * Branch instruction type: jumps to execute the instruction with the label specified
- * Unless the register specified in the branch instruction is blank-a message is displayed in this case
+ * Unless the register specified in the branch instruction is blank-a message is logged to the console in this case
  * Created by liliya on 17/01/2015.
  */
 @Getter
@@ -30,15 +30,9 @@ public class BnzInstruction extends Instruction {
     @Override
     public void execute(Machine m) {
         if (m.getRegisters().getRegister(op1) != 0) {   //check register is not 0
-            for (Instruction i : m.getProg()) {
-                if (i.label.equals(newLabel)) {       //find the required instruction
-                    m.setPc(m.getProg().indexOf(i));
-                }
-
-            }
-        } else {
-            LOGGER.info("\"Jump to " + newLabel + " not executed as the register " + op1 + " is empty\"");
-        }
+            m.getProg().stream().forEach(i-> {if (i.label.equals(newLabel))    //change the PC of the program to the new instruction register
+                                                    {m.setPc(m.getProg().indexOf(i));}}); }
+         else  LOGGER.info("\"Jump to " + newLabel + " not executed as register " + op1 + " is empty\"");
 
     }
 
