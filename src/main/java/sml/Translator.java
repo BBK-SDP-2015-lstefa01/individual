@@ -113,17 +113,6 @@ public class Translator {
         }
     }
 
-    /*
-    The approach taken to find the required instruction class is as follows:
-    1. Find all roots in the classpath
-    2. Using this list, determine all folders which are not jar files and extract all .class files from them
-    3. Convert the given files to a list of Class objects and only return the ones which are children of Instruction
-    4. Find the class object required for the specific instruction type from the class generated in 3 based on opcode
-
-    Point 1-3 are in essence not required for a solution which utlizes the opcode to determine the class name, but have been
-    left in the code as they can be leveraged towards a more sophisticated solution potentially which does not rely the developer
-    of future instructions to use the opcode+Instruction format to naming
-     */
 
     /**
      * Takes in an instruction opcode and label and returns an Instruction object of the right type
