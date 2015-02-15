@@ -23,13 +23,13 @@ public class LinInstructionTest {
 
     @Test
     public void testExecute() {
-
+        buildUp();
         LinInstruction lin1 = new LinInstruction("l1", 5, 10);
         lin1.execute(m);
-        LinInstruction lin2 = new LinInstruction("l2", 6, 10);
+        LinInstruction lin2 = new LinInstruction("l2", 6, 15);
         lin2.execute(m);
 
-        assertEquals(10, m.getRegisters().getRegister(6));
+        assertEquals(15, m.getRegisters().getRegister(6));
         assertEquals(10, m.getRegisters().getRegister(5));
 
     }
